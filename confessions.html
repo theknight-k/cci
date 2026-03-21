@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCI — Confessions</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #e8507a;
+    --gold: #f5c842;
+    --soft: rgba(255,255,255,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    background: #0d0d1a;
+    overflow-x: hidden;
+  }
+
+  /* Background */
+  .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .bg-img {
+    position: absolute; inset: 0;
+    background: url('haramaya_bg.png') center/cover no-repeat;
+    opacity: 0.12;
+  }
+  .bg-grad {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 30%, rgba(232,80,122,0.2) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 70%, rgba(58,74,138,0.3) 0%, transparent 50%),
+      linear-gradient(160deg, #0d0d1a 0%, #130e22 100%);
+  }
+  .dots {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .blob { position: absolute; border-radius: 50%; filter: blur(70px); animation: bfloat 10s ease-in-out infinite; }
+  .blob1 { width:350px;height:350px;background:rgba(232,80,122,0.12);top:-100px;left:-80px;animation-delay:0s; }
+  .blob2 { width:280px;height:280px;background:rgba(58,74,138,0.18);bottom:10%;right:-60px;animation-delay:4s; }
+  @keyframes bfloat { 0%,100%{transform:translateY(0);}50%{transform:translateY(-28px);} }
+
+  /* Floating hearts */
+  .hearts { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+  .heart { position: absolute; opacity: 0; animation: riseHeart linear infinite; font-size: 14px; }
+  @keyframes riseHeart {
+    0%{opacity:0;transform:translateY(0);}8%{opacity:0.5;}
+    92%{opacity:0.1;}100%{opacity:0;transform:translateY(-100vh) rotate(15deg);}
+  }
+
+  /* Page layout */
+  .page {
+    position: relative; z-index: 10;
+    max-width: 600px; margin: 0 auto;
+    padding: 40px 16px 60px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center; margin-bottom: 36px;
+    animation: fadeDown 0.7s cubic-bezier(.23,1,.32,1) both;
+  }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px);}to{opacity:1;transform:translateY(0);} }
+
+  .logo-row {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .logo-img {
+    width: 42px; height: 42px;
+    background: url('haramaya_logo.png') center/contain no-repeat;
+    opacity: 0.7;
+  }
+  .site-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700; color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .site-name em { font-style: italic; color: var(--rose); }
+
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(232,80,122,0.12); border: 1px solid rgba(232,80,122,0.28);
+    border-radius: 50px; padding: 4px 14px; margin-bottom: 14px;
+    font-size: 11px; font-weight: 500; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--rose);
+  }
+  .badge-dot { width:6px;height:6px;background:var(--rose);border-radius:50%;animation:pulse 1.4s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.25;} }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px; font-weight: 700; color: #fff; line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .header h1 em { font-style: italic; color: var(--rose); }
+  .header p {
+    font-size: 13px; color: rgba(255,255,255,0.35);
+    font-weight: 300; line-height: 1.6;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 28px;
+  }
+  .divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+  .divider-text { font-size: 11px; color: rgba(255,255,255,0.2); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* Confession cards */
+  .cards { display: flex; flex-direction: column; gap: 20px; }
+
+  .card {
+    background: rgba(13,13,26,0.72);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 26px 28px;
+    position: relative; overflow: hidden;
+    animation: cardIn 0.6s cubic-bezier(.23,1,.32,1) both;
+  }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.22s; }
+  .card:nth-child(3) { animation-delay: 0.34s; }
+  @keyframes cardIn { from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);} }
+
+  /* Glow accent per card */
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    border-radius:20px 20px 0 0;
+  }
+  .card.red::before  { background: linear-gradient(90deg, #e8507a, #ff8fab); }
+  .card.gold::before { background: linear-gradient(90deg, #f5c842, #ffd97a); }
+  .card.blue::before { background: linear-gradient(90deg, #7b8fff, #3a4a8a); }
+
+  /* Card header */
+  .card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .sender {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; flex-shrink: 0;
+  }
+  .avatar.red  { background: linear-gradient(135deg,#e8507a,#c0345c); color:#fff; }
+  .avatar.gold { background: linear-gradient(135deg,#f5c842,#d4a017); color:#1a1030; }
+  .avatar.blue { background: linear-gradient(135deg,#7b8fff,#3a4a8a); color:#fff; }
+
+
+  .sender-name {
+    font-size: 14px; font-weight: 500; color: #fff; line-height: 1.2;
+  }
+  .sender-meta {
+    font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px;
+  }
+
+  .time-badge {
+    font-size: 10px; color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    border-radius: 50px; padding: 3px 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+    white-space: nowrap;
+  }
+
+  /* Confession text */
+  .confession-text {
+    font-size: 15px; color: rgba(255,255,255,0.82);
+    line-height: 1.75; font-weight: 300;
+    position: relative; padding-left: 18px;
+  }
+  .confession-text::before {
+    content: '"';
+    position: absolute; left: 0; top: -4px;
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; line-height: 1;
+    opacity: 0.25; color: var(--rose);
+  }
+
+  /* Reaction row */
+  .reactions {
+    display: flex; align-items: center; gap: 14px; margin-top: 18px;
+    padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .react-btn {
+    display: flex; align-items: center; gap: 5px;
+    background: none; border: none; cursor: pointer;
+    font-size: 12px; color: rgba(255,255,255,0.3);
+    font-family: 'DM Sans', sans-serif; padding: 0;
+    transition: color 0.2s, transform 0.15s;
+  }
+  .react-btn:hover { color: rgba(255,255,255,0.7); transform: scale(1.1); }
+  .react-btn .icon { font-size: 15px; }
+  .anon-tag {
+    margin-left: auto;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: rgba(255,255,255,0.15);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center; margin-top: 40px;
+    font-size: 11px; color: rgba(255,255,255,0.15); line-height: 1.8;
+  }
+  .footer strong { color: rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="bg-img"></div>
+  <div class="bg-grad"></div>
+  <div class="dots"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+</div>
+
+<div class="hearts" id="hearts"></div>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-img"></div>
+      <span class="site-name">CC<em>I</em></span>
+    </div>
+    <div class="header-badge">
+      <span class="badge-dot"></span>
+      Anonymous Confessions
+    </div>
+    <h1>The campus is<br>talking about <em>her</em> 💌</h1>
+    <p>Haramaya University · Anonymous · Real feelings</p>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <span class="divider-text">3 confessions</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- Confession Cards -->
+  <div class="cards">
+
+    <!-- Confession 1 — Nati -->
+    <div class="card red">
+      <div class="card-head">
+        <div class="sender">
+          <div class="avatar red">N</div>
+          <div class="sender-info">
+            <div class="sender-name">Nati</div>
+            <div class="sender-meta">Information Sciences · Year 2</div>
+          </div>
+        </div>
+        <span class="time-badge">2 days ago</span>
+      </div>
+      <p class="confession-text">
+        There's this girl in my section — I don't even know how to explain it. Every morning when she walks into the lecture hall I completely lose my train of thought. We've talked maybe three times, always about assignments, but every single time she laughs at something I said I replay it in my head for the rest of the day. I sit two rows behind her on purpose. I'm not ready to say her name out loud yet, but if you're reading this and you're in Natural Sciences second year… you already know who you are.
+      </p>
+      <div class="reactions">
+        <button class="react-btn" onclick="react(this)"><span class="icon">❤️</span> <span>47</span></button>
+        <button class="react-btn" onclick="react(this)"><span class="icon">🥺</span> <span>23</span></button>
+        <button class="react-btn" onclick="react(this)"><span class="icon">💬</span> <span>Reply</span></button>
+        <span class="anon-tag">anonymous</span>
+      </div>
+    </div>
+
+    <!-- Confession 2 — Bruk -->
+    <div class="card gold">
+      <div class="card-head">
+        <div class="sender">
+          <div class="avatar gold">B</div>
+          <div class="sender-info">
+            <div class="sender-name">Bruk</div>
+            <div class="sender-meta">Computer Science · year 3 </div>
+          </div>
+        </div>
+        <span class="time-badge">5 days ago</span>
+      </div>
+      <p class="confession-text">
+        I've been staring at my keyboard for an hour trying to write this. We're in the same department, different sections, but I see her at the library every Thursday without fail. She always has those earphones in, the white ones, and she highlights her notes in three different colors. I memorized her schedule without even meaning to. I've almost said something a hundred times — I even practiced what I'd say walking from the dorm — and every time I get close I just keep walking. I think about her more than I study. That's honestly embarrassing to admit but here we are.
+      </p>
+      <div class="reactions">
+        <button class="react-btn" onclick="react(this)"><span class="icon">❤️</span> <span>89</span></button>
+        <button class="react-btn" onclick="react(this)"><span class="icon">🥺</span> <span>61</span></button>
+        <button class="react-btn" onclick="react(this)"><span class="icon">💬</span> <span>Reply</span></button>
+        <span class="anon-tag">anonymous</span>
+      </div>
+    </div>
+
+    <!-- Confession 3 — Natan -->
+    <div class="card blue">
+      <div class="card-head">
+        <div class="sender">
+          <div class="avatar blue">N</div>
+          <div class="sender-info">
+            <div class="sender-name">Natan</div>
+            <div class="sender-meta">Software Engineer · Year 2</div>
+          </div>
+        </div>
+        <span class="time-badge">1 week ago</span>
+      </div>
+      <p class="confession-text">
+        Okay so I promised myself I'd never use CCI for something like this but here I am at midnight. We're in the same section. We did a group presentation together in March and she corrected my slide layout so nicely that I literally thanked her four times like an idiot. She probably thinks I'm weird. The thing is she's just kind — to everyone, not only me — and I keep telling myself that's the reason I like her, but honestly I think it's her specifically. The way she argues with the lecturer when she knows she's right. The way she writes. Everything. This isn't a crush anymore, I don't think.
+      </p>
+      <div class="reactions">
+        <button class="react-btn" onclick="react(this)"><span class="icon">❤️</span> <span>134</span></button>
+        <button class="react-btn" onclick="react(this)"><span class="icon">🥺</span> <span>98</span></button>
+        <button class="react-btn" onclick="react(this)"><span class="icon">💬</span> <span>Reply</span></button>
+        <span class="anon-tag">anonymous</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <strong>CCI — Confession Connection Bot</strong><br>
+    Haramaya University · All confessions are anonymous · 2025
+  </div>
+
+</div>
+
+<script>
+  // Floating hearts
+  const heartsEl = document.getElementById('hearts');
+  const emojis = ['💌','🫀','✨','💫','🌹','💝','🥀','💘'];
+  for (let i = 0; i < 18; i++) {
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.bottom = '-30px';
+    h.style.fontSize = (9 + Math.random() * 13) + 'px';
+    const dur = 14 + Math.random() * 16;
+    h.style.animationDuration = dur + 's';
+    h.style.animationDelay = (Math.random() * dur) + 's';
+    heartsEl.appendChild(h);
+  }
+
+  // Reaction button click — increment count
+  function react(btn) {
+    const span = btn.querySelector('span:last-child');
+    const num = parseInt(span.textContent);
+    if (!isNaN(num)) {
+      span.textContent = num + 1;
+      btn.style.color = '#e8507a';
+      btn.style.transform = 'scale(1.2)';
+      setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+    }
+  }
+</script>
+
+</body>
+</html>
